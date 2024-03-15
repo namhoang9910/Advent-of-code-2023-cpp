@@ -8,7 +8,7 @@ int main()
 {
     ifstream inputFile;
 
-    inputFile.open("input1a.txt");   
+    inputFile.open("input1.txt");   
 
     int sumOfCalibration;
 
@@ -19,8 +19,8 @@ int main()
         {
             if (!lineString.empty())
             {
-                size_t firstDigitIdx = lineString.find_first_of("0123456789");
-                size_t lastDigitIdx = lineString.find_last_of("0123456789");
+                size_t firstDigitIdx = lineString.find_first_of("123456789");
+                size_t lastDigitIdx = lineString.find_last_of("123456789");
 
                 if (firstDigitIdx != string::npos && lastDigitIdx != string::npos)
                 {

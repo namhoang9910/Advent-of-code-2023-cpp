@@ -1,16 +1,27 @@
 #include <fstream>
 #include <iostream>
+
+#include <algorithm>
+#include <map>
 #include <string>
 
 using namespace std;
 
-string textToDigit(string lineString);
+struct TextDigit
+{
+    string text;
+    string digit;
+    size_t idx = string::npos;
+};
 
-int main() 
+TextDigit findTextDigit(string lineString);
+void textToDigit(string &lineString);
+
+int main()
 {
     ifstream inputFile;
 
-    inputFile.open("input1a.txt");   
+    inputFile.open("input1.txt");
 
     int sumOfCalibration;
 
@@ -21,17 +32,16 @@ int main()
         {
             if (!lineString.empty())
             {
-                lineString = textToDigit(lineString);
-                
+                textToDigit(lineString);
 
-                size_t firstDigitIdx = lineString.find_first_of("0123456789");
-                size_t lastDigitIdx = lineString.find_last_of("0123456789");
+                size_t firstDigitIdx = lineString.find_first_of("123456789");
+                size_t lastDigitIdx = lineString.find_last_of("123456789");
 
                 if (firstDigitIdx != string::npos && lastDigitIdx != string::npos)
                 {
                     int firstDigit = lineString[firstDigitIdx] - '0';
                     int lastDigit = lineString[lastDigitIdx] - '0';
-                    sumOfCalibration += (firstDigit * 10 + lastDigit);               
+                    sumOfCalibration += (firstDigit * 10 + lastDigit);
                 }
             }
         }
@@ -50,52 +60,56 @@ int main()
     return 0;
 }
 
-string textToDigit(string lineString)
+void textToDigit(string &lineString)
 {
-    vector<string> textNumbers = {"zero", "one", "two", "three", "four",
-                                  "five", "six", "seven", "eight", "nine"};
+    TextDigit currentText, nextText;
+    bool noTextDigits = false;
 
-    size_t firstTextNumIdx = string::npos;
-    size_t lastTextNumIdx = string::npos;
-    int firstNumLen = 0, lastNumLen = 0;
-    int firstNumCount = 0, lastNumCount = 0, currentCount = 0;
-    for (const string &textNumber : textNumbers)
+    do
     {
-        size_t currentFirstIdx = lineString.find(textNumber);
-        if (currentFirstIdx != string::npos && (firstTextNumIdx == string::npos || currentFirstIdx < firstTextNumIdx))
-        {
-            firstTextNumIdx = currentFirstIdx;
-            firstNumLen = textNumber.length();
-            firstNumCount = currentCount;
-        }
+        currentText = findTextDigit(lineString);
 
-        size_t currentLastIdx = lineString.rfind(textNumber);
-        if (currentLastIdx != string::npos && (lastTextNumIdx == string::npos || currentLastIdx > lastTextNumIdx))
+        if (currentText.idx != string::npos)
         {
-            lastTextNumIdx = currentLastIdx;
-            lastNumLen = textNumber.length();
-            lastNumCount = currentCount;
-        }
+            size_t currentTextEnd = currentText.idx + currentText.text.length() - 1;
 
-        currentCount++;
-    }
+            nextText = findTextDigit(lineString.substr(currentTextEnd));
 
-    if (lastNumLen > 0)
-    {
-        if ((firstTextNumIdx + firstNumLen - 1) == lastTextNumIdx)
-        {
-            lineString.replace(lastTextNumIdx + 1, lastNumLen - 1, to_string(lastNumCount));
+            size_t nextTextBegin = ((nextText.idx != string::npos) ? (currentTextEnd + nextText.idx) : string::npos);
+
+            lineString.replace(currentText.idx, currentText.text.length() - ((currentTextEnd == nextTextBegin) ? 1 : 0), currentText.digit);
         }
         else
         {
-            lineString.replace(lastTextNumIdx, lastNumLen, to_string(lastNumCount));
+            noTextDigits = true;
+        }
+
+    } while (!noTextDigits);
+}
+
+TextDigit findTextDigit(string lineString)
+{
+    TextDigit one = {"one", "1"};
+    TextDigit two = {"two", "2"};
+    TextDigit three = {"three", "3"};
+    TextDigit four = {"four", "4"};
+    TextDigit five = {"five", "5"};
+    TextDigit six = {"six", "6"};
+    TextDigit seven = {"seven", "7"};
+    TextDigit eight = {"eight", "8"};
+    TextDigit nine = {"nine", "9"};
+    vector<TextDigit> textDigitVector = {one, two, three, four, five, six, seven, eight, nine};
+
+    TextDigit textDigit;
+
+    for (auto &currentTextDigit : textDigitVector)
+    {
+        currentTextDigit.idx = lineString.find(currentTextDigit.text);
+
+        if ((currentTextDigit.idx != string::npos) && (currentTextDigit.idx < textDigit.idx))
+        {
+            textDigit = currentTextDigit;
         }
     }
-
-    if (firstNumLen > 0)
-    {
-        lineString.replace(firstTextNumIdx, firstNumLen, to_string(firstNumCount));
-    }
-
-    return lineString;
+    return textDigit;
 }
