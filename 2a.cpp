@@ -6,12 +6,11 @@
 
 using namespace std;
 
+const int MAXRED = 12, MAXGREEN = 13, MAXBLUE = 14;
+int sumValidGameID;
+map<int, map<int, map<string, int>>> gameMap;
 
-map<int, map<string, int>> cubeMap;
-
-//void extractColorPoints (string lineString);
-void extractColorPoints (string lineString, map<int, map<string, int>> &cubeMap);
-//
+void addValidGameID(string lineString, int gameNumber);
 
 int main()
 {
@@ -19,31 +18,16 @@ int main()
 
     inputFile.open("input2.txt");
 
-    int sumOfID; 
+    int gameNumber = 1;
 
     if (inputFile.is_open())
     {
         string lineString;
         while (getline(inputFile, lineString))
         {
-            extractColorPoints(lineString, cubeMap);
-
+            addValidGameID(lineString, gameNumber);
+            gameNumber++;
         }
-
-        
-        for (const auto& gameNumber : cubeMap)
-        {
-            cout << "gameNumber.first: " << gameNumber.first << '\n';
-
-            for (const auto& cubeSet : gameNumber.second)
-            {
-
-                cout << "    cubeSet.first - cubeSet.second: " << cubeSet.first << " - "<< cubeSet.second << '\n';
-            }
-
-            cout << "\n\n"; 
-        } 
-        
     }
     else
     {
@@ -51,45 +35,49 @@ int main()
     }
 
     cout << "----------------------------------------------\n";
-    cout << "Sum of game IDs: " << sumOfID << '\n';
+    cout << "Sum of valid game IDs: " << sumValidGameID << '\n';
     cout << "----------------------------------------------\n";
 
     return 0;
 }
 
-// To-do: Function to extract sums of colors in each game
-void extractColorPoints (string lineString, map<int, map<string, int>> &cubeMap)
+void addValidGameID(string lineString, int gameNumber)
 {
+    int round = 1;
+    bool isTooManyCubes = false;
     stringstream lineStream(lineString);
     string cubeSet;
-    int gameNumber;
-
     while (getline(lineStream, cubeSet, ';'))
     {
         size_t colonIdx = cubeSet.find(':');
-        if (colonIdx != string::npos)
-        {
-            size_t gameNumberBegin = cubeSet.find(' ') + 1;
-            int gameNumberLength = colonIdx - gameNumberBegin;
-            gameNumber = stoi(cubeSet.substr(gameNumberBegin, gameNumberLength));
-
-            cubeSet = cubeSet.substr(colonIdx);
-        }
-
-
+        cubeSet = (colonIdx != string::npos) ? cubeSet.substr(colonIdx) : cubeSet;
         stringstream setStream(cubeSet);
-        string cube;
+
+        string cube, color;
+        int digit;
         while (getline(setStream, cube, ','))
         {
             size_t digitBegin = cube.find(' ') + 1;
-            size_t digitLength = cube.find(' ', digitBegin + 1) - digitBegin;            
-            int digit = stoi(cube.substr(digitBegin, digitLength));
-
+            size_t digitLength = cube.find(' ', digitBegin + 1) - digitBegin;
             size_t colorBegin = cube.find(' ', digitBegin + 1) + 1;
-            string color = cube.substr(colorBegin);
 
-            cubeMap[gameNumber][color] += digit;
+            digit = stoi(cube.substr(digitBegin, digitLength));
+            color = cube.substr(colorBegin);
+
+            gameMap[gameNumber][round][color] = digit;
         }
+
+        bool enoughRedCubes = (gameMap[gameNumber][round]["red"] <= MAXRED);
+        bool enoughGreenCubes = (gameMap[gameNumber][round]["green"] <= MAXGREEN);
+        bool enoughBlueCubes = (gameMap[gameNumber][round]["blue"] <= MAXBLUE);
+
+        if (!enoughRedCubes || !enoughGreenCubes || !enoughBlueCubes)
+        {
+            isTooManyCubes = true;
+        }
+
+        round++;
     }
+
+    sumValidGameID += (!isTooManyCubes) ? gameNumber : 0;
 }
-// To-do: Function to check each game with conditions
