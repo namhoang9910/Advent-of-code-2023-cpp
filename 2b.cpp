@@ -37,6 +37,7 @@ int main()
     cout << "Sum of power of sets: " << sumOfPowers << '\n';
     cout << "----------------------------------------------\n";
 
+    inputFile.close();
     return 0;
 }
 

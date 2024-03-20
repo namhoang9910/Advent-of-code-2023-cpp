@@ -57,6 +57,7 @@ int main()
     cout << "Sum of calibration values: " << sumOfCalibration << '\n';
     cout << "----------------------------------------------\n";
 
+    inputFile.close();
     return 0;
 }
 

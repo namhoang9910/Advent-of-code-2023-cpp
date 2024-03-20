@@ -38,6 +38,7 @@ int main()
     cout << "Sum of valid game IDs: " << sumValidGameID << '\n';
     cout << "----------------------------------------------\n";
 
+    inputFile.close();
     return 0;
 }
 
